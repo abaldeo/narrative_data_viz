@@ -1,1 +1,11 @@
-# narrative_data_viz
+# Narrative Visualization Objective:
+
+# Narrative Structure:
+
+# Scenes:
+
+# Annotations:
+
+# Parameters:
+
+# Triggers:
