@@ -3,21 +3,25 @@ function createTickValues(start, end, numTicks) {
     return d3.ticks(start, end, numTicks);
 }
 
-function createBarChart(csvData, xValue, yValue) {
+function createBarChart(csvData, xValue, yValue, options) {
     // Set the dimensions and margins of the graph
-    var margin = { top: 20, right: 20, bottom: 30, left: 40 },
-        width = 960 - margin.left - margin.right,
-        height = 500 - margin.top - margin.bottom;
-
+    options = options || {};
+    var margin = options.margin || { top: 20, right: 20, bottom: 30, left: 40 };
+    var width = options.width || 960 - margin.left - margin.right;
+    var height = options.height || 500 - margin.top - margin.bottom;
+    var xRangeStart = options.xRangeStart || 0;
+    var xScalePading = options.xScalePading || 0.1;
+    var yDomainStart = options.yDomainStart || 0;
+    var yRangeEnd = options.yRangeStart || 0;
 
     // Set the ranges
     var xScale = d3.scaleBand()
         .domain(csvData.map(function (d) { return d[xValue]; }))
-        .range([0, width])
-        .padding(0.1);
+        .range([xRangeStart, width])
+        .padding(xScalePading);
     var yScale = d3.scaleLinear()
-        .domain([0, d3.max(csvData, function (d) { return +d[yValue]; })])
-        .range([height, 0]);
+        .domain([yDomainStart, d3.max(csvData, function (d) { return +d[yValue]; })])
+        .range([height, yRangeEnd]);
 
     // Append the SVG object to the body of the page
     var svg = d3.select("body").append("svg")
@@ -49,22 +53,70 @@ function createBarChart(csvData, xValue, yValue) {
         .attr("class", "x-axis")
         .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
         .call(d3.axisBottom(xScale));
-
 }
 
+function createPieChart(csvData, xValue, yValue, options) {
+    // Set default options if not provided
+    options = options || {};
+    var width = options.width || 500;
+    var height = options.height || 500;
+    var margin = options.margin || { top: 20, right: 20, bottom: 30, left: 40 };
+    var radius = Math.min(width, height) / 2 - margin;
+    var color = options.color || d3.scaleOrdinal(d3.schemeCategory10);
+    // Create SVG element
+    var svg = d3.select("body")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+    // Create pie function
+    var pie = d3.pie()
+        .value(function (d) { return d[yValue]; });
+    // Create arc function
+    var arc = d3.arc()
+        .innerRadius(0)
+        .outerRadius(radius);
+    // Build the pie chart
+    var paths = svg.selectAll('path')
+        .data(pie(csvData))
+        .enter()
+        .append("g")
+        .append('path')
+        .attr('d', arc)
+        .attr('fill', function (d, i) {
+            return color(d.data[xValue]);
+        })
+        .attr("stroke", "black")
+        .style("stroke-width", "2px")
+        .style("opacity", 0.7);
+    // Append text labels to the pie slices
+    paths.append("text")
+        .attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")"; })
+        .attr("text-anchor", "middle")
+        .text(function (d) { return d.data[xValue]; });
+}   
 
-function createScatterPlot(csvData, xValue, yValue) {
-    var margin = { top: 10, right: 30, bottom: 30, left: 60 },
-        width = 460 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
+function createScatterPlot(csvData, xValue, yValue, options) {
+    options = options || {};
+    var margin = options.margin || { top: 10, right: 30, bottom: 30, left: 60 };
+    var width = options.width || 460 - margin.left - margin.right,
+    var height = options.height || 400 - margin.top - margin.bottom;
+    var xDomainStart = options.xDomainStart || 0;
+    var xRangeStart = options.xRangeStart || 0;
+    var yDomainStart = options.yDomainStart || 0;
+    var yRangeEnd = options.yRangeEnd || 0;
+    var radius = options.radius || 5;
+    var fill = options.fill || "#69b3a2";
+    var tickFormat = options.tickFormat || d3.format("~s");
 
     // Create scales
     var xScale = d3.scaleLog()
-        .domain([0, d3.max(csvData, function (d) { return d[xValue]; })])
-        .range([0, width]);
+        .domain([xDomainStart, d3.max(csvData, function (d) { return d[xValue]; })])
+        .range([xRangeStart, width]);
     var yScale = d3.scaleLog()
-        .domain([0, d3.max(csvData, function (d) { return +d[yValue]; })])
-        .range([height, 0]);
+        .domain([yDomainStart, d3.max(csvData, function (d) { return +d[yValue]; })])
+        .range([height, yRangeEnd]);
 
     // Append SVG object to the body of the page
     var svg = d3.select("body")
@@ -82,17 +134,17 @@ function createScatterPlot(csvData, xValue, yValue) {
         .append("circle")
         .attr("cx", function (d) { return xScale(d[xValue]); })
         .attr("cy", function (d) { return yScale(d[yValue]); })
-        .attr("r", 5)
-        .style("fill", "#69b3a2");
+        .attr("r", radius)
+        .style("fill", fill);
 
 
     var xAxis = d3.axisBottom(xScale)
         .tickValues(createTickValues(xScale.domain()[0], xScale.domain()[1], 5))
-        .tickFormat(d3.format("~s"));
+        .tickFormat(d3.format(tickFormat));
 
     var yAxis = d3.axisLeft(yScale)
         .tickValues(createTickValues(yScale.domain()[0], yScale.domain()[1], 5))
-        .tickFormat(d3.format("~s"));
+        .tickFormat(d3.format(tickFormat));
 
     // Add Y axis
     svg.append("g")
@@ -105,23 +157,26 @@ function createScatterPlot(csvData, xValue, yValue) {
         .attr("class", "x-axis")
         .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
         .call(xAxis);
-
 }
 
+function createLineChart(csvData, xValue, yValue, options) {
+    options = options || {};
+    var margin = options.margin || { top: 10, right: 30, bottom: 30, left: 60 };
+    var width = options.width || 460 - margin.left - margin.right,
+    var height = options.height || 400 - margin.top - margin.bottom;
+    var xDomainStart = options.xDomainStart || 0;
+    var xRangeStart = options.xRangeStart || 0;
+    var yDomainStart = options.yDomainStart || 0;
+    var yRangeEnd = options.yRangeEnd || 0;
 
-function createLineChart(csvData, xValue, yValue) {
-    // Define sizes
-    var margin = { top: 10, right: 30, bottom: 30, left: 60 },
-        width = 460 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
 
     // Set X & Y scales 
     var x = d3.scaleTime()
         .domain(d3.extent(csvData, function (d) { return d[xValue]; }))
-        .range([0, width]);
+        .range([xRangeStart, width]);
     var y = d3.scaleLinear()
-        .domain([0, d3.max(csvData, function (d) { return +d[yValue]; })])
-        .range([height, 0]);
+        .domain([yDomainStart, d3.max(csvData, function (d) { return +d[yValue]; })])
+        .range([height, yRangeEnd]);
 
 
     // Append SVG to body of page
@@ -157,8 +212,6 @@ function createLineChart(csvData, xValue, yValue) {
         .attr("class", "x-axis")
         .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
         .call(d3.axisBottom(x));
-
-
 }
 
 function addAnnotations(svg, xScale, yScale, annotationsArray) {
