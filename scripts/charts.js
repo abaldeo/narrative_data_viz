@@ -1,6 +1,9 @@
+
+function createTickValues(start, end, numTicks) {
+    return d3.ticks(start, end, numTicks);
+}
+
 function createBarChart(csvData, xValue, yValue) {
-
-
     // Set the dimensions and margins of the graph
     var margin = { top: 20, right: 20, bottom: 30, left: 40 },
         width = 960 - margin.left - margin.right,
@@ -26,24 +29,26 @@ function createBarChart(csvData, xValue, yValue) {
 
 
     // Create the bars
-    svg.selectAll(".bar")
+    svg.selectAll("bar")
         .data(csvData)
         .enter().append("rect")
         .attr("class", "bar")
-        .attr("x", function (d) { return xScale(d[xValue]); })
+        .attr("x", function (d, i) { return xScale(i); })
         .attr("y", function (d) { return yScale(d[yValue]); })
         .attr("width", xScale.bandwidth())
         .attr("height", function (d) { return height - yScale(d[yValue]); });
 
-    // Create the X axis
-    xScale.domain(csvData.map(function (d) { return d[xValue]; }));
+    // Create the Y axis
     svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(xScale));
+        .attr("class", "y-axis")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .call(d3.axisLeft(yScale));
 
-    yScale.domain([0, d3.max(csvData, function (d) { return d[yValue]; })]);
+    // Create the X axis
     svg.append("g")
-        .call(d3.axisLeft(yScale).ticks(10));
+        .attr("class", "x-axis")
+        .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
+        .call(d3.axisBottom(xScale));
 
 }
 
@@ -52,6 +57,14 @@ function createScatterPlot(csvData, xValue, yValue) {
     var margin = { top: 10, right: 30, bottom: 30, left: 60 },
         width = 460 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
+
+    // Create scales
+    var xScale = d3.scaleLog()
+        .domain([0, d3.max(csvData, function (d) { return d[xValue]; })])
+        .range([0, width]);
+    var yScale = d3.scaleLog()
+        .domain([0, d3.max(csvData, function (d) { return +d[yValue]; })])
+        .range([height, 0]);
 
     // Append SVG object to the body of the page
     var svg = d3.select("body")
@@ -62,17 +75,8 @@ function createScatterPlot(csvData, xValue, yValue) {
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
 
-    // Create scales
-    var xScale = d3.scaleLinear()
-        .domain([0, d3.max(csvData, function (d) { return +d[xValue]; })])
-        .range([0, width]);
-    var yScale = d3.scaleLinear()
-        .domain([0, d3.max(csvData, function (d) { return +d[yValue]; })])
-        .range([height, 0]);
-
     // Add dots
-    svg.append('g')
-        .selectAll("dot")
+    svg.selectAll("dot")
         .data(csvData)
         .enter()
         .append("circle")
@@ -92,18 +96,16 @@ function createScatterPlot(csvData, xValue, yValue) {
 
     // Add Y axis
     svg.append("g")
-        .attr("transform", "translate(0," + width + ")")
+        .attr("class", "y-axis")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
         .call(yAxis);
 
     // Add X axis
     svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
+        .attr("class", "x-axis")
+        .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
         .call(xAxis);
 
-}
-
-function createTickValues(start, end, numTicks) {
-    return d3.ticks(start, end, numTicks);
 }
 
 
@@ -113,14 +115,6 @@ function createLineChart(csvData, xValue, yValue) {
         width = 460 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
-    // Append SVG to body of page
-    var svg = d3.select("body")
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
     // Set X & Y scales 
     var x = d3.scaleTime()
         .domain(d3.extent(csvData, function (d) { return d[xValue]; }))
@@ -129,14 +123,14 @@ function createLineChart(csvData, xValue, yValue) {
         .domain([0, d3.max(csvData, function (d) { return +d[yValue]; })])
         .range([height, 0]);
 
-    // Append X axis
-    svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
 
-    // Append Y axis
-    svg.append("g")
-        .call(d3.axisLeft(y));
+    // Append SVG to body of page
+    var svg = d3.select("body")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // Create line
     var line = d3.line()
@@ -150,6 +144,21 @@ function createLineChart(csvData, xValue, yValue) {
         .attr("stroke", "steelblue")
         .attr("stroke-width", 1.5)
         .attr("d", line);
+
+    // Append Y axis
+    svg.append("g")
+        .attr("class", "y-axis")
+        .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
+        .call(d3.axisLeft(y));
+
+
+    // Append X axis
+    svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
+        .call(d3.axisBottom(x));
+
+
 }
 
 function addAnnotations(svg, xScale, yScale, annotationsArray) {
@@ -160,12 +169,17 @@ function addAnnotations(svg, xScale, yScale, annotationsArray) {
             y: d => yScale(d.y)
         })
         .annotations(annotationsArray);
-
-    svg.append("g")
-        .attr("class", "annotation-group")
-        .call(makeAnnotations);
+    var annotationGroup = svg.select(".annotation-group");
+    if (annotationGroup.empty()) {
+        annotationGroup = svg.append("g")
+            .attr("class", "annotation-group");
+    } else {
+        annotationGroup.selectAll("*").remove();
+    }
+    annotationGroup.call(makeAnnotations);
 }
 
+/**
 var myAnnotation = {
     x: "2005-07-03",  // a date or number that corresponds to a value in your data
     y: 200,  // a number that corresponds to a value in your data
@@ -177,13 +191,11 @@ var myAnnotation = {
     dx: 50,  // offset of the note text in x direction
     dy: -20  // offset of the note text in y direction
 };
+*/
 
 function addTooltip(chart, data, xScale, yScale) {
-    const annotations = [];
-
-    // Create an annotation for each data point
-    data.forEach((d) => {
-        const annotation = {
+    const annotations = data.map((d) => {
+        return {
             note: {
                 label: d.label,
                 title: d.title,
@@ -193,9 +205,11 @@ function addTooltip(chart, data, xScale, yScale) {
             dx: 20,
             dy: -20,
         };
-        annotations.push(annotation);
     });
+    return annotations;
+}
 
+/**
     // Add the annotations to the chart
     const makeAnnotations = d3.annotation()
         .type(d3.annotationLabel)
@@ -204,4 +218,4 @@ function addTooltip(chart, data, xScale, yScale) {
     chart.append("g")
         .attr("class", "annotation-group")
         .call(makeAnnotations);
-}
+ */
