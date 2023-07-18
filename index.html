@@ -6,34 +6,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="css/responsive.css">
-    <!-- <link rel="stylesheet" type="text/css" href="css/style.css"> -->
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
 
     <title>CS416 Narrative Visualization</title>
 </head>
 
-<body>
+<body onload="init()">
 
-    <div class="container">
-        <h1>US Student Loan Debt vs National Debt</h1>
+<div class="container">
+    <!-- <h1>US National Debt (% of GDP)</h1> -->
+    <div id="chart"></div>
+    
+    <div id="footer" class="slide-nav">
+        <button class="page-button" onclick="previousSlide()">Previous</button>
+        <button class="page-button" id=button1>1</button>
+        <button class="page-button" id=button2>2</button>
+        <button class="page-button" id=button3>3</button>
+        <button class="page-button" onclick="nextSlide()">Next</button>
     </div>
-    <div class="slideshow-container">
-        <div class="slide">
-            <h2>Slide 1</h2>
-            <p>This is the first slide.</p>
-        </div>
-        <div class="slide">
-            <h2>Slide 2</h2>
-            <p>This is the second slide.</p>
-        </div>
-        <div class="slide">
-            <h2>Slide 3</h2>
-            <p>This is the third slide.</p>
-        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.5.1/d3-annotation.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
-    <!-- <script type="text/javascript" src="scripts/index.js"></script> -->
+    <script type="text/javascript" src="scripts/charts.js"></script>
+    <script type="text/javascript" src="scripts/index.js"></script>
+
 
 </body>
 
