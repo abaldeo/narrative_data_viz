@@ -14,15 +14,16 @@
 <body onload="init()">
 
 <div class="container">
-    <!-- <h1>US National Debt (% of GDP)</h1> -->
-    <div id="chart"></div>
+        <h2>US National Debt (% of GDP)</h2>
+        
+        <div id="chart" class="chart-container"></div>
     
     <div id="footer" class="slide-nav">
-        <button class="page-button" onclick="previousSlide()">Previous</button>
+        <button class="page-button" onclick="previousPage()">Previous</button>
         <button class="page-button" id=button1>1</button>
         <button class="page-button" id=button2>2</button>
         <button class="page-button" id=button3>3</button>
-        <button class="page-button" onclick="nextSlide()">Next</button>
+        <button class="page-button" onclick="nextPage()">Next</button>
     </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
