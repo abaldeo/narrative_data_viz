@@ -178,9 +178,9 @@ var y;
 
 function createLineChart(csvData, xValue, yValue, options) {
     options = options || {};
-    var margin = options.margin || { top: 10, right: 30, bottom: 30, left: 100 };
-    var width = options.width || 460 - margin.left - margin.right;
-    var height = options.height || 400 - margin.top - margin.bottom;
+    var margin = options.margin || { top: 50, right: 50, bottom: 75, left: 75 };
+    var width = options.width || 800 - margin.left - margin.right;
+    var height = options.height || 600 - margin.top - margin.bottom;
     var xDomainStart = options.xDomainStart || 0;
     var xRangeStart = options.xRangeStart || 0;
     var yDomainStart = options.yDomainStart || 0;
@@ -190,9 +190,12 @@ function createLineChart(csvData, xValue, yValue, options) {
     var svg = options.svg || d3.select(selector).select("svg");
     var addAxis = options.addAxis == false ? false : true;
     var drawLine = options.drawLine == false ? false : true;
-    var chartTitle = options.title || "Line Chart";
+    var chartTitle = options.title;
     var yAxisLabel = options.yAxisLabel || "";
+    var xAxisLabel = options.xAxisLabel || "";
     var sourceCredit = options.sourceCredit || "";
+    var sourceLink = options.sourceLink || "";
+    var legendTitle = options.legendTitle || "";
     // Set X & Y scales 
     x = d3.scaleTime()
         .domain(d3.extent(csvData, d => parseDate(d[xValue])))
@@ -206,12 +209,14 @@ function createLineChart(csvData, xValue, yValue, options) {
     if (svg.empty()) {
         // Append SVG to body of page
         svg = d3.select(selector)
-            .append("svg")
+            .append("svg").style('border', '2px solid gray')  // Chart border
+
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
+
     }
 
     var line = d3.line()
@@ -237,23 +242,24 @@ function createLineChart(csvData, xValue, yValue, options) {
         // Append Y axis
         svg.append("g")
             .attr("class", "y-axis")
-            .attr("transform", "translate(" + 0 + "," + (margin.top) + ")")
+            .attr("transform", "translate(" + 0 + "," + (0) + ")")
             .call(d3.axisLeft(y));
 
 
         // Append X axis
         svg.append("g")
             .attr("class", "x-axis")
-            .attr("transform", "translate(" + 0 + "," + (height + margin.top) + ")")
+            .attr("transform", "translate(" + 0 + "," + (height) + ")")
             .call(d3.axisBottom(x));
     }
-    addVerticalGridLines(svg, x, height);
+    // addVerticalGridLines(svg, x, height);
     addHorizontalGridLines(svg, y, width);
-    // addChartTitle(svg, margin, width, chartTitle);
+    addChartTitle(svg, margin, width, chartTitle);
     addYAxisLabel(svg, margin, height, yAxisLabel);
-    // addSourceCredit(svg, margin, height, sourceCredit);
+    addXAxisLabel(svg, margin, width, height, xAxisLabel);
+    addSourceCredit(svg, margin, height, sourceCredit, sourceLink);
     // addLineDots(svg, width, height, xValue, x, csvData, y, yValue);
-
+    addChartLegend(legendTitle, width, margin);
     return svg;
 
 }
@@ -401,14 +407,33 @@ function addYAxisLabel(svg, margin, height, label) {
     return svg
 }
 
-function addSourceCredit(svg, margin, height, sourceText) {
+
+function addXAxisLabel(svg, margin, width, height, label) {
+    svg.append("text")
+        .attr("class", "x-axis-label")
+        .attr("x", width / 2) // Adjust the position as needed
+        .attr("y", height + 30) // Adjust the position as needed
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .style("font-size", "14px")
+        .style("font-weight", "bold")
+        .style("font-family", "sans-serif")
+        .text(label);
+    return svg
+}
+
+
+function addSourceCredit(svg, margin, height, sourceText, sourceLink) {
     svg.append("text")
         .attr("class", "source-credit")
         .attr("x", 0)
-        .attr("y", height + margin.bottom)
+        .attr("y", height + margin.top + 20)
         .style("font-size", "12px")
         .style("font-family", "sans-serif")
-        .text(sourceText)
+        .append("a") // Add an anchor element
+        .attr("href", sourceLink) // Set the href attribute to the source link
+        .attr("target", "_blank") // Open the link in a new tab
+        .text(sourceText);
     return svg
 }
 
@@ -436,4 +461,14 @@ function addHorizontalGridLines(svg, y, width) {
         .attr("y2", d => y(d))
         .attr("stroke", "#e0e0e0")
         .attr("stroke-width", .5);
+}
+
+function addChartLegend(text, width, margin) {
+    // Define legend colors and labels
+    var svg = d3.select("svg")
+    // Handmade legend
+    svg.append("circle").attr("cx", width - (.07 * width)).attr("cy", margin.top - 20).attr("r", 6).style("fill", "steelblue")
+
+    svg.append("text").attr("x", width - (.05 * width)).attr("y", margin.top - 20).text(text).style("font-size", "15px").attr("alignment-baseline", "middle")
+
 }

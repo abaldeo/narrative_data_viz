@@ -30,7 +30,44 @@ showSlide(currentSlide);
 const dataCache = {};
 var annotations = [{}];
 var allData = [];
+let currentPage = 1;
 
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+    } else {
+        currentPage = 3;
+    }
+    goToPage(currentPage);
+
+}
+
+function nextPage() {
+    if (currentPage < 3) {
+        currentPage++;
+
+    } else {
+        currentPage = 1;
+    }
+    goToPage(currentPage);
+}
+
+function goToPage(page) {
+    if (page == 1) {
+        console.log(page)
+
+        document.getElementById("button1").click();
+    }
+    else if (page == 2) {
+        console.log(page)
+        document.getElementById("button2").click();
+    }
+    else if (page == 3) {
+        console.log(page)
+
+        document.getElementById("button3").click();
+    }
+}
 
 async function init() {
     let data = await loadData("data/nationaldebt.csv")
@@ -50,31 +87,51 @@ async function init() {
     console.log(lineData3);
     options = {
         "selector": "#chart", "drawLine": false, "yAxisLabel": "Percent of GDP", "xAxisLabel": "Year",
-        "sourceCredit": "Source: Federal Reserve Economic Data (FRED)\nhttps://fred.stlouisfed.org/"
+        "sourceCredit": "Source: Federal Reserve Economic Data (FRED)",
+        "sourceLink": "https://fred.stlouisfed.org/",
+        "legendTitle": "National Debt",
+
     }
     var svg = createLineChart(data, "DATE", "PERCENTOFGDP", options)
     // var line1 = addLine(svg, data, "DATE", "PERCENTOFGDP",)
-    // var line1 = drawLine(svg, lineData1, "DATE", "PERCENTOFGDP", { "xRangeEnd": 110 })
+    var line1 = drawLine(svg, lineData1, "DATE", "PERCENTOFGDP")
     // var line2 = drawLine(svg, lineData2, "DATE", "PERCENTOFGDP", { "xRangeStart": 110, "xRangeEnd": 220 })
     // var line3 = drawLine(svg, lineData3, "DATE", "PERCENTOFGDP", { "xRangeStart": 220, "xRangeEnd": 330 })
 
     d3.select("#button1").on("click", function () {
         console.log('click1');
-        allData = [];
-        drawLine(svg, lineData1, "DATE", "PERCENTOFGDP", { "xRangeEnd": 110 });
-        console.log(allData.length)
+        currentPage = 1;
+        // d3.select(".line").remove();
+        const lineToRemove = d3.select(".line");
+
+        // Transition the line to fade out and remove it
+        lineToRemove
+            .transition()
+            .duration(500) // Set the duration of the transition
+            .style("opacity", 0) // Fade out the line
+            .end() // Wait for the transition to finish
+            .then(() => {
+                // Remove the line from the DOM
+                lineToRemove.remove();
+                allData = [];
+                drawLine(svg, lineData1, "DATE", "PERCENTOFGDP",);
+                console.log(allData.length)
+            });
     });
     d3.select("#button2").on("click", function () {
+        currentPage = 2;
+
         if (allData.length < lineData1.length) allData = lineData1;
-        if (allData.length == lineData1.length + lineData2.length) allData = lineData1;
+        if (allData.length == lineData1.length + lineData2.length) return; //allData = lineData1;
         if (allData.length > lineData1.length + lineData2.length) allData = lineData1;
-        drawLine(svg, lineData2, "DATE", "PERCENTOFGDP", { "xRangeStart": 110, "xRangeEnd": 220 });
+        drawLine(svg, lineData2, "DATE", "PERCENTOFGDP",);
         console.log(allData.length)
     });
     d3.select("#button3").on("click", function () {
+        currentPage = 3;
         if (allData.length < lineData1.length + lineData2.length) allData = lineData1.concat(lineData2);
-        if (allData.length == lineData1.length + lineData2.length + lineData3.length) allData = lineData1.concat(lineData2);
-        drawLine(svg, lineData3, "DATE", "PERCENTOFGDP", { "xRangeStart": 220, "xRangeEnd": 330 })
+        if (allData.length == lineData1.length + lineData2.length + lineData3.length) return; //allData = lineData1.concat(lineData2);
+        drawLine(svg, lineData3, "DATE", "PERCENTOFGDP",)
         console.log(allData.length);
     });
     // // Append line to SVG
@@ -100,11 +157,11 @@ var previousPath = null;
 function addLine(svg, data, xValue, yValue, options) {
     console.log(data)
     options = options || {};
-    var margin = options.margin || { top: 10, right: 30, bottom: 30, left: 100 };
+    var margin = options.margin || { top: 50, right: 50, bottom: 75, left: 75 };
     // var parseDate = options.parseDate || d3.timeParse("%Y-%m-%d");
 
-    var width = (options.width || 460) - margin.left - margin.right;
-    var height = (options.height || 400) - margin.top - margin.bottom;
+    var width = (options.width || 800) - margin.left - margin.right;
+    var height = (options.height || 600) - margin.top - margin.bottom;
     var xDomainStart = options.xDomainStart || 0;
     var xRangeStart = options.xRangeStart || 0;
     var xRangeEnd = options.xRangeEnd || width;
@@ -188,11 +245,11 @@ function addLine(svg, data, xValue, yValue, options) {
 function drawLine(svg, data, xValue, yValue, options) {
     console.log(data)
     options = options || {};
-    var margin = options.margin || { top: 10, right: 30, bottom: 30, left: 100 };
+    var margin = options.margin || { top: 50, right: 50, bottom: 75, left: 75 };
     // var parseDate = options.parseDate || d3.timeParse("%Y-%m-%d");
 
-    var width = (options.width || 460) - margin.left - margin.right;
-    var height = (options.height || 400) - margin.top - margin.bottom;
+    var width = (options.width || 800) - margin.left - margin.right;
+    var height = (options.height || 600) - margin.top - margin.bottom;
     var xDomainStart = options.xDomainStart || 0;
     var xRangeStart = options.xRangeStart || 0;
     var xRangeEnd = options.xRangeEnd || width;
@@ -501,23 +558,35 @@ async function init2() {
     // update(lineData2);
     // update(lineData3);
 
+    // Event listener for button1
     d3.select("#button1").on("click", function () {
-        console.log('click1');
         allData = [];
-        update(lineData1)
-        console.log(allData.length)
+        update(lineData1);
+        console.log(allData.length);
     });
+    // Event listener for button2
     d3.select("#button2").on("click", function () {
-        if (allData.length < 80) allData = lineData1;
-        if (allData.length == 156) allData = lineData1.concat(lineData2);
-        if (allData.length == 229) allData = lineData1;
-        update(lineData2); console.log(allData.length)
+        if (allData.length < 80) {
+            allData = lineData1;
+        }
+        else if (allData.length == 156) {
+            allData = lineData1
+        }
+        else if (allData.length == 229) {
+            allData = lineData1;
+        }
+        update(lineData2);
+        console.log(allData.length);
     });
+    // Event listener for button3
     d3.select("#button3").on("click", function () {
-        if (allData.length < 156) allData = lineData1.concat(lineData2);
-        if (allData.length == 229) allData = lineData1.concat(lineData2);
+        if (allData.length < 156) {
+            allData = lineData1.concat(lineData2);
+        }
+        else if (allData.length == 229) {
+            allData = lineData1.concat(lineData2);
+        }
         update(lineData3);
         console.log(allData.length);
     });
 }
-
