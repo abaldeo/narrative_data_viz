@@ -1,6 +1,3 @@
-// import { createLineChart } from './charts.js';
-
-
 const dataCache = {};
 let allAnnotations = [
     {
@@ -128,15 +125,7 @@ let annotations = [];
 
 async function init() {
     data = await loadData("data/nationaldebt.csv")
-    // let data2 = await loadData("data/inflation.csv")
-    // let data2 = await loadData("data/studentdebt.csv")
-    // let data = await loadData("data/totalpublicdebt.csv")
-    // let data = await loadData("data/USGDPvsDebt.csv")
     console.log(data);
-    // data = data.filter(d => d.TotalPublicDebtMil != "")
-    // console.log(data);
-
-    //parittionData(data, lineData1, lineData2, lineData3);
     partitions = partitionData(data, intervals);
     lineData1 = partitions[0];
     lineData2 = partitions[1];
@@ -152,8 +141,6 @@ async function init() {
     first_scene_annotations = annotations[0];
     second_scene_annotations = annotations[1];
     third_scene_annotations = annotations[2];
-
-
 
     options = {
         "selector": "#chart", "drawLine": false, "yAxisLabel": "Percent of GDP", "xAxisLabel": "Year",
@@ -194,22 +181,6 @@ async function init() {
         third_scene_annotations = annotations[2];
         drawScene3();
     });
-    // // Append line to SVG
-    // var line = svg.append("path")
-    //     .datum(data)
-    //     .attr("d", line1)
-    //     .attr("stroke", "steelblue")
-    //     .attr("stroke-width", 2)
-    //     .attr("fill", "none");
-
-
-
-    // createLineChart(data, "DATE", "FPCPITOTLZGUSA", options)
-    // createLineChart(data, "DATE", "SLOAS", options)
-    // createLineChart(data, "DATE", "GFDEBTN", options)
-    // createLineChart(data, "Quarter", "TotalPublicDebtMil", options)
-    // options2 = { "svg": svg, "addAxis": false }
-    // var svg2 = createLineChart(data2, "DATE", "FPCPITOTLZGUSA", options2)
 
 }
 
@@ -419,14 +390,6 @@ function filterAnnotationsByDate(annotations, startDate, endDate) {
         return annotationDate >= startDate && annotationDate <= endDate;
     });
 }
-
-// const slider = document.getElementById('date-slider');
-// const sliderValues = document.getElementById('slider-values');
-
-// slider.addEventListener('input', function () {
-//     sliderValues.textContent = `Min: ${slider.min}, Max: ${slider.max}`;
-// });
-
 
 const startDateInput = document.getElementById("start");
 const endDateInput = document.getElementById("end");
