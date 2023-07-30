@@ -1,36 +1,79 @@
 // import { createLineChart } from './charts.js';
 
-const slides = d3.selectAll('.slide');
-const slideCount = slides.size();
-let currentSlide = 0;
-
-function showSlide(index) {
-    slides.style('display', 'none');
-    slides.filter((d, i) => i === index).style('display', 'block');
-}
-
-function previousSlide() {
-    currentSlide = (currentSlide - 1 + slideCount) % slideCount;
-    showSlide(currentSlide);
-}
-
-function nextSlide() {
-    currentSlide = (currentSlide + 1) % slideCount;
-    showSlide(currentSlide);
-}
-
-function goToSlide(index) {
-    currentSlide = index - 1;
-    showSlide(currentSlide);
-}
-
-showSlide(currentSlide);
-
 
 const dataCache = {};
-var annotations = [{}];
-var allData = [];
+let allAnnotations = [
+    {
+        note: {
+            title: "1973 Oil Crisis",
+            label: "This event started on 1973-10-17 and ended on 1974-03-18.",
+            wrap: 100
+
+        },
+        data: { "x": "1973-10-17", "y": 31 },
+        // x: "1973-10-17",
+        // y: 31,
+        dx: 0,
+        dy: -100,
+        // subject: {
+        //     width: -20,
+        //     height: 105
+        // }
+    },
+    {
+        note: {
+            title: "Latin American Debt Crisis",
+            label: "This event started on 1982-07-01 and ended on 1990-12-31.",
+            wrap: 100
+        },
+        data: { x: "1982-07-01", y: 33.92530 },
+        // x: "1982-07-01",
+        // y: 33.92530,
+        dx: 30,
+        dy: -150
+    },
+    {
+        note: {
+            title: "Asian Financial Crisis",
+            label: "This event started on 1997-07-02 and ended on 1999-02-01.",
+            wrap: 100
+        },
+        data: { x: "1997-07-02", y: 62.48709 },
+        // x: "1997-07-02",
+        // y: 62.48709,        
+        dx: 50,
+        dy: -100
+    },
+    {
+        note: {
+            title: "Great Recession",
+            label: "This event started on 2007-12-01 and ended on 2009-06-30.",
+            // wrap: 100
+        },
+        data: { x: "2007-12-01", y: 64.17278 },
+        // x: "2007-12-01",
+        // y: 64.17278,        
+        dx: -10,
+        dy: -20
+    },
+    {
+        note: {
+            title: "Coronavirus Pandemic",
+            label: "This event started on 2019-12-31 and ended on 2023-05-23.",
+            // wrap: 100
+        },
+        data: { x: "2019-12-31", y: 107.827 },
+        // x: "2019-12-31",
+        // y: 107.827,
+        dx: -1,
+        dy: 200
+    }
+]
+
+let allData = [];
 let currentPage = 1;
+
+
 
 function previousPage() {
     if (currentPage > 1) {
@@ -54,85 +97,102 @@ function nextPage() {
 
 function goToPage(page) {
     if (page == 1) {
-        console.log(page)
-
+        console.log("go to page:" + page)
         document.getElementById("button1").click();
     }
     else if (page == 2) {
-        console.log(page)
+        console.log("go to page:" + page)
         document.getElementById("button2").click();
     }
     else if (page == 3) {
-        console.log(page)
-
+        console.log("go to page:" + page)
         document.getElementById("button3").click();
     }
 }
 
+let data;
+let lineData1 = [];
+let lineData2 = [];
+let lineData3 = [];
+let svg = [];
+
+const intervals = [
+    { start: '1966-01-01', end: '1985-12-31' },
+    { start: '1986-01-01', end: '2004-12-31' },
+    { start: '2005-01-01', end: '2023-12-31' }
+];
+
+
+let partitions = [];
+let annotations = [];
+
 async function init() {
-    let data = await loadData("data/nationaldebt.csv")
-    let data2 = await loadData("data/inflation.csv")
+    data = await loadData("data/nationaldebt.csv")
+    // let data2 = await loadData("data/inflation.csv")
     // let data2 = await loadData("data/studentdebt.csv")
     // let data = await loadData("data/totalpublicdebt.csv")
     // let data = await loadData("data/USGDPvsDebt.csv")
     console.log(data);
     // data = data.filter(d => d.TotalPublicDebtMil != "")
     // console.log(data);
-    let lineData1 = [];
-    let lineData2 = [];
-    let lineData3 = [];
-    parittionData(data, lineData1, lineData2, lineData3);
+
+    //parittionData(data, lineData1, lineData2, lineData3);
+    partitions = partitionData(data, intervals);
+    lineData1 = partitions[0];
+    lineData2 = partitions[1];
+    lineData3 = partitions[2];
+    console.log('scene 1 data')
     console.log(lineData1);
+    console.log('scene 2 data')
     console.log(lineData2);
+    console.log('scene 3 data')
     console.log(lineData3);
+
+    annotations = partitionAnnotations(allAnnotations, intervals);
+    first_scene_annotations = annotations[0];
+    second_scene_annotations = annotations[1];
+    third_scene_annotations = annotations[2];
+
+
+
     options = {
         "selector": "#chart", "drawLine": false, "yAxisLabel": "Percent of GDP", "xAxisLabel": "Year",
         "sourceCredit": "Source: Federal Reserve Economic Data (FRED)",
-        "sourceLink": "https://fred.stlouisfed.org/",
+        "sourceLink": "https://fred.stlouisfed.org/series/GFDEGDQ188S",
         "legendTitle": "National Debt",
 
     }
-    var svg = createLineChart(data, "DATE", "PERCENTOFGDP", options)
-    // var line1 = addLine(svg, data, "DATE", "PERCENTOFGDP",)
-    var line1 = drawLine(svg, lineData1, "DATE", "PERCENTOFGDP")
-    // var line2 = drawLine(svg, lineData2, "DATE", "PERCENTOFGDP", { "xRangeStart": 110, "xRangeEnd": 220 })
-    // var line3 = drawLine(svg, lineData3, "DATE", "PERCENTOFGDP", { "xRangeStart": 220, "xRangeEnd": 330 })
+    d3.select('#narrative-detail').html(scene1HTML);
+    svg = createLineChart(data, "DATE", "PERCENTOFGDP", options)
+    line_opt = { 'annotationarray': first_scene_annotations };
+    var line1 = drawLine(svg, lineData1, "DATE", "PERCENTOFGDP", line_opt)
+    updateMinMaxDate(lineData1);
 
     d3.select("#button1").on("click", function () {
-        console.log('click1');
-        currentPage = 1;
-        // d3.select(".line").remove();
-        const lineToRemove = d3.select(".line");
+        d3.select('#narrative-detail').html(scene1HTML);
 
-        // Transition the line to fade out and remove it
-        lineToRemove
-            .transition()
-            .duration(500) // Set the duration of the transition
-            .style("opacity", 0) // Fade out the line
-            .end() // Wait for the transition to finish
-            .then(() => {
-                // Remove the line from the DOM
-                lineToRemove.remove();
-                allData = [];
-                drawLine(svg, lineData1, "DATE", "PERCENTOFGDP",);
-                console.log(allData.length)
-            });
+        lineData1 = partitions[0];
+        // resetLineData();
+        first_scene_annotations = annotations[0];
+        drawScene1();
+
     });
     d3.select("#button2").on("click", function () {
-        currentPage = 2;
+        d3.select('#narrative-detail').html(scene2HTML);
 
-        if (allData.length < lineData1.length) allData = lineData1;
-        if (allData.length == lineData1.length + lineData2.length) return; //allData = lineData1;
-        if (allData.length > lineData1.length + lineData2.length) allData = lineData1;
-        drawLine(svg, lineData2, "DATE", "PERCENTOFGDP",);
-        console.log(allData.length)
+        lineData2 = partitions[1];
+        // resetLineData();
+        second_scene_annotations = annotations[1];
+        drawScene2();
+
     });
     d3.select("#button3").on("click", function () {
-        currentPage = 3;
-        if (allData.length < lineData1.length + lineData2.length) allData = lineData1.concat(lineData2);
-        if (allData.length == lineData1.length + lineData2.length + lineData3.length) return; //allData = lineData1.concat(lineData2);
-        drawLine(svg, lineData3, "DATE", "PERCENTOFGDP",)
-        console.log(allData.length);
+        d3.select('#narrative-detail').html(scene3HTML);
+
+        lineData3 = partitions[2];
+        // resetLineData();
+        third_scene_annotations = annotations[2];
+        drawScene3();
     });
     // // Append line to SVG
     // var line = svg.append("path")
@@ -148,101 +208,87 @@ async function init() {
     // createLineChart(data, "DATE", "SLOAS", options)
     // createLineChart(data, "DATE", "GFDEBTN", options)
     // createLineChart(data, "Quarter", "TotalPublicDebtMil", options)
-    options2 = { "svg": svg, "addAxis": false }
+    // options2 = { "svg": svg, "addAxis": false }
     // var svg2 = createLineChart(data2, "DATE", "FPCPITOTLZGUSA", options2)
 
 }
-var previousPath = null;
 
-function addLine(svg, data, xValue, yValue, options) {
-    console.log(data)
-    options = options || {};
-    var margin = options.margin || { top: 50, right: 50, bottom: 75, left: 75 };
-    // var parseDate = options.parseDate || d3.timeParse("%Y-%m-%d");
-
-    var width = (options.width || 800) - margin.left - margin.right;
-    var height = (options.height || 600) - margin.top - margin.bottom;
-    var xDomainStart = options.xDomainStart || 0;
-    var xRangeStart = options.xRangeStart || 0;
-    var xRangeEnd = options.xRangeEnd || width;
-    var yDomainStart = options.yDomainStart || 0;
-    var yRangeStart = options.yRangeStart || height;
-    var yRangeEnd = options.yRangeEnd || 0;
-
-    // Set X & Y scales 
-    var x = d3.scaleTime()
-        .domain(d3.extent(data, (d) => parseDate(d[xValue])))
-        .nice()
-        .rangeRound([xRangeStart, xRangeEnd]);
-    var y = d3.scaleLinear()
-        .domain([yDomainStart, d3.max(data, (d) => parseFloat(+d[yValue]))])
-        .nice()
-        .rangeRound([height, yRangeEnd]);
-
-    var line = d3.line()
-        .x(function (d) { return x(parseDate(d[xValue])) })
-        .y(function (d) { return y(parseFloat(d[yValue])) });
-
-
-    // const path = svg.selectAll('path.line').data([data]);
-
-    // path.enter().append('path')
-    //     .attr('class', 'line')
-    //     .merge(path)
-    //     .attr('d', line)
-    //     .style('stroke', 'orange')
-    //     .style('stroke-width', 2)
-    //     .style('fill', 'none')
-    //     .attr("stroke-dasharray", function () {
-    //         return this.getTotalLength();
-    //     })
-    //     .attr("stroke-dashoffset", function () {
-    //         return this.getTotalLength();
-    //     })
-    //     .transition()
-    //     .duration(1000)
-    //     .attr("stroke-dashoffset", 0);
-    // path.exit().remove();
-
-    var path = svg.append("path")
-        .datum(data)
-        .attr("class", "line")
-        .attr("d", line(data))
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", 2)
-        .attr("fill", "none")
-        .attr("stroke-dasharray", function () {
-            return this.getTotalLength();
-        })
-        .attr("stroke-dashoffset", function () {
-            return this.getTotalLength();
-        })
-        .transition()
-        .duration(1000)
-        .attr("stroke-dashoffset", 0);
-
-    // if (previousPath) {
-    //     var previousTotalLength = previousPath.node().getTotalLength();
-    //     previousPath.attr("stroke-dasharray", previousTotalLength + " " + previousTotalLength)
-    //         .attr("stroke-dashoffset", previousTotalLength)
-    //         .transition()
-    //         .duration(2000)
-    //         .ease(d3.easeLinear)
-    //         .attr("stroke-dashoffset", 0);
-    // }
-
-
-    // previousPath = path;
-
-    addLineDots(svg, width, height, xValue, x, data, y, yValue);
-
-
-    return line;
+function resetLineData() {
+    lineData1 = partitions[0];
+    lineData2 = partitions[1];
+    lineData3 = partitions[2];
 }
 
+function resetAnnoations() {
+    first_scene_annotations = annotations[0];
+    second_scene_annotations = annotations[1];
+    third_scene_annotations = annotations[2];
+}
 
+function drawScene1(filter = false) {
+    currentPage = 1;
+    // d3.select(".line").remove();
+    const lineToRemove = d3.select(".line");
+
+    // Transition the line to fade out and remove it
+    lineToRemove
+        .transition()
+        .duration(500) // Set the duration of the transition
+        .style("opacity", 0) // Fade out the line
+        .end() // Wait for the transition to finish
+        .then(() => {
+            // Remove the line from the DOM
+            lineToRemove.remove();
+            allData = [];
+            opt = { 'annotationarray': first_scene_annotations };
+            drawLine(svg, lineData1, "DATE", "PERCENTOFGDP", opt);
+            console.log('after drawScene1')
+            console.log(allData.length)
+            updateMinMaxDate(lineData1);
+        }).catch((error) => {
+            console.log(error);
+        });
+};
+
+function drawScene2(filter = false) {
+    currentPage = 2;
+    console.log('in draw scene2')
+    console.log('all data length ' + allData.length)
+    console.log('line data 1 length ' + lineData1.length)
+    console.log('line data 2 length ' + lineData2.length)
+    if (allData.length < lineData1.length) allData = lineData1;
+    if (!filter && allData.length == lineData1.length + lineData2.length) return; //allData = lineData1;
+    if (allData.length > lineData1.length + lineData2.length) allData = lineData1;
+    if (filter) allData = lineData1;
+    opt = { 'annotationarray': second_scene_annotations };
+    drawLine(svg, lineData2, "DATE", "PERCENTOFGDP", opt);
+    console.log('after drawScene2')
+    console.log(allData.length)
+
+    updateMinMaxDate(allData);
+
+};
+
+function drawScene3(filter = false) {
+    currentPage = 3;
+    console.log('in draw scene3')
+    console.log('all data length ' + allData.length)
+    console.log('line data 1 length ' + lineData1.length)
+    console.log('line data 2 length ' + lineData2.length)
+    console.log('line data 3 length ' + lineData3.length)
+    if (allData.length < lineData1.length + lineData2.length) allData = lineData1.concat(lineData2);
+    if (allData.length == lineData1.length + lineData2.length + lineData3.length) return; //allData = lineData1.concat(lineData2);
+    if (filter) allData = lineData1.concat(lineData2);
+    opt = { 'annotationarray': third_scene_annotations };
+    drawLine(svg, lineData3, "DATE", "PERCENTOFGDP", opt)
+    console.log('after drawScene3')
+    console.log(allData.length);
+    updateMinMaxDate(allData);
+
+}
 
 function drawLine(svg, data, xValue, yValue, options) {
+    console.log('drawing line for:')
     console.log(data)
     options = options || {};
     var margin = options.margin || { top: 50, right: 50, bottom: 75, left: 75 };
@@ -256,7 +302,9 @@ function drawLine(svg, data, xValue, yValue, options) {
     var yDomainStart = options.yDomainStart || 0;
     var yRangeStart = options.yRangeStart || height;
     var yRangeEnd = options.yRangeEnd || 0;
-    allData = allData.concat(data);
+    var annotationarray = options.annotationarray || [];
+    allData = [...new Set(allData.concat(data))];
+
 
     // // Set X & Y scales
     // var x = d3.scaleTime()
@@ -309,38 +357,35 @@ function drawLine(svg, data, xValue, yValue, options) {
     yAxisGroup.call(yAxis);
 
     addLineDots(svg, width, height, xValue, x, allData, y, yValue);
+    addAnnotations(svg, x, y, annotationarray);
 
     return line;
 }
 
-// function update(data, xValue, svg, line) {
-//     let group = svg.select("g").selectAll("path")
-//         .data(data, (d) => parseDate(d[xValue]))
-//         .join(
-//             enter => enter.append("path")
-//                 .attr("class", "line")
-//                 .attr("d", line(data))
-//                 .attr("stroke", "blue")
-//                 .attr("stroke-width", 2)
-//                 .attr("fill", "none"),
-//             update => update,
-//             exit => exit.call(path => path.transition().duration(1000).attr("d", line(data))
-//             )
-//         ).call(path => path.transition().duration(5).attr("d", line(data)))
-// }
+function partitionData(data, intervals) {
+    let partitions = [];
+    intervals.forEach(interval => {
+        const lineData = [];
+        data.forEach(obj => {
+            const date = new Date(obj.DATE);
+            if (date >= new Date(interval.start) && date <= new Date(interval.end)) {
+                lineData.push(obj);
+            }
+        });
+        partitions.push(lineData);
 
+    });
+    return partitions;
+}
 
-function parittionData(data, lineData1, lineData2, lineData3) {
-    data.forEach(obj => {
-        const date = new Date(obj.DATE);
-        // Compare the parsed date with the desired date ranges
-        if (date >= new Date('1966-01-01') && date <= new Date('1985-12-31')) {
-            lineData1.push(obj);
-        } else if (date >= new Date('1985-01-01') && date <= new Date('2004-12-31')) {
-            lineData2.push(obj);
-        } else if (date >= new Date('2004-01-01') && date <= new Date('2023-12-31')) {
-            lineData3.push(obj);
-        }
+function partitionAnnotations(annotations, intervals) {
+    return intervals.map((interval) => {
+        return annotations.filter((annotation) => {
+            const annotationDate = new Date(annotation.data.x);
+            const startDate = new Date(interval.start);
+            const endDate = new Date(interval.end);
+            return annotationDate >= startDate && annotationDate <= endDate;
+        });
     });
 }
 
@@ -363,230 +408,162 @@ async function loadData(filename) {
     }
 }
 
-function animateLineChart() {
-    // Define your data and initial chart setup here
-
-    // Append the initial line
-    const svg = d3.select("#chart");
-    const line = svg.append("path")
-        .attr("d", initialLineData)
-        .attr("stroke", "blue")
-        .attr("stroke-width", 2)
-        .attr("fill", "none");
-
-    // Animate the line
-    line.transition()
-        .duration(1000)
-        .attr("d", finalLineData)
-        .attr("stroke", "red");
-
-    // You can update other attributes of the line in each step of the animation
-
+function filterAnnotationsByDate(annotations, startDate, endDate) {
+    // console.log('filtering annotations by date')
+    // console.log(annotations)
+    // console.log(startDate)
+    // console.log(endDate)
+    return annotations.filter((annotation) => {
+        const annotationDate = new Date(annotation.data.x);
+        // console.log(annotationDate);
+        return annotationDate >= startDate && annotationDate <= endDate;
+    });
 }
 
-function addSVG(element, margin, width, height) {
-    // append the svg object to the body of the page
-    var svg = d3.select(element)
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
-    return svg;
-}
+// const slider = document.getElementById('date-slider');
+// const sliderValues = document.getElementById('slider-values');
 
-function addToolTip(element) {
+// slider.addEventListener('input', function () {
+//     sliderValues.textContent = `Min: ${slider.min}, Max: ${slider.max}`;
+// });
 
-    var tooltip = d3.select(element)
-        .append("div")
-        .attr("class", "tooltip")
-        .styles({
-            "opacity": 0,
-            "background-color": "#f8f8ff",
-            "border": "solid",
-            "border-width": "1px",
-            "border-radius": "5px",
-            "padding": "10px",
-            "width": "auto",
-            "position": "absolute",
-            "font-size": "13px"
-        });
-    return tooltip;
 
-}
+const startDateInput = document.getElementById("start");
+const endDateInput = document.getElementById("end");
 
-async function init2() {
-    let data = await loadData("data/nationaldebt.csv")
-    // let data2 = await loadData("data/inflation.csv")
-    // let data2 = await loadData("data/studentdebt.csv")
-    // let data = await loadData("data/totalpublicdebt.csv")
-    // let data = await loadData("data/USGDPvsDebt.csv")
-    console.log(data);
-    // data = data.filter(d => d.TotalPublicDebtMil != "")
-    // console.log(data);
-    let lineData1 = [];
-    let lineData2 = [];
-    let lineData3 = [];
-    parittionData(data, lineData1, lineData2, lineData3);
-    console.log(lineData1);
-    console.log(lineData2);
-    console.log(lineData3);
-    options = {
-        "selector": "#chart", "drawLine": false, "yAxisLabel": "Percent of GDP", "xAxisLabel": "Year",
-        "sourceCredit": "Source: Federal Reserve Economic Data (FRED)\nhttps://fred.stlouisfed.org/"
+var oldStartDate = startDateInput.value;
+var oldEndDate = endDateInput.value;
+
+
+
+startDateInput.addEventListener("change", function () {
+    endDateInput.min = startDateInput.value;
+    oldStartDate = startDateInput.value;
+    filterPageData();
+    console.log('after start date input change')
+    console.log(allData)
+
+});
+
+endDateInput.addEventListener("change", function () {
+    startDateInput.max = endDateInput.value;
+    oldEndDate = endDateInput.value;
+    filterPageData();
+    console.log('after end date input change')
+    console.log(allData)
+
+});
+
+startDateInput.addEventListener("input", handleStartDateClear);
+endDateInput.addEventListener("input", handleEndDateClear);
+
+function handleStartDateClear(event) {
+    if (event.target.value === "") {
+        // "Clear" button was clicked
+        let targetValue = "1966-01-01"
+        resetLineData();
+        resetAnnoations();
+
+        startDateInput.value = targetValue;
+        console.log("Start Clear button clicked");
     }
+}
 
-    const svgWidth = 800;
-    const svgHeight = 600;
+function handleEndDateClear(event) {
+    if (event.target.value === "") {
+        // "Clear" button was clicked
+        let targetValue;
+        if (currentPage === 1) {
+            lineData1 = partitions[0];
+            first_scene_annotations = annotations[0];
+            targetValue = getMaxDate(lineData1);
+        }
+        else if (currentPage === 2) {
+            lineData2 = partitions[1];
+            second_scene_annotations = annotations[1];
+            targetValue = getMaxDate(lineData2);
+        }
+        else if (currentPage === 3) {
+            lineData3 = partitions[2];
+            third_scene_annotations = annotations[2];
+            targetValue = getMaxDate(lineData3);
+        }
+        endDateInput.value = targetValue;
+        console.log("End Clear button clicked");
+    }
+}
 
-    const svg = d3
-        .select('body')
-        .append('svg')
-        .attr('width', svgWidth)
-        .attr('height', svgHeight)
-        .style('border', '2px solid gray'); // Chart border
-    const margin = { top: 20, right: 20, bottom: 100, left: 100 };
-    const chartWidth = svgWidth - margin.left - margin.right;
-    const chartHeight = svgHeight - margin.top - margin.bottom;
-    // Initialize the chart
-    const chart = svg
-        .append('g')
-        .attr('width', chartWidth)
-        .attr('height', chartHeight)
-        .attr('transform', `translate(${margin.left}, ${margin.top})`);
+function filterPageData() {
+    const startDate = new Date(startDateInput.value);
+    const endDate = new Date(endDateInput.value);
+    if (currentPage === 1) {
+        lineData1 = filterData(lineData1);
+        first_scene_annotations = filterAnnotationsByDate(first_scene_annotations, startDate, endDate);
+        console.log('lineData1 after filter, before draw')
+        console.log(lineData1)
+        drawScene1(true);
 
-    // Scaling band for the x-axis(timestamps)
-    const xScale = d3.scaleTime().range([0, chartWidth])
-    // Linear scaling for the y-axis(temperature)
-    const yScale = d3.scaleLinear().range([chartHeight, 0]);
+    }
+    else if (currentPage === 2) {
+        lineData1 = filterData(lineData1);
+        first_scene_annotations = filterAnnotationsByDate(first_scene_annotations, startDate, endDate);
+        lineData2 = filterData(lineData2);
+        second_scene_annotations = filterAnnotationsByDate(second_scene_annotations, startDate, endDate);
+        console.log('lineData2 after filter, before draw')
+        console.log(lineData2)
+        drawScene2(true);
+    }
+    else if (currentPage === 3) {
+        lineData1 = filterData(lineData1);
+        first_scene_annotations = filterAnnotationsByDate(first_scene_annotations, startDate, endDate);
+        lineData2 = filterData(lineData2);
+        second_scene_annotations = filterAnnotationsByDate(second_scene_annotations, startDate, endDate);
+        lineData3 = filterData(lineData3);
+        third_scene_annotations = filterAnnotationsByDate(third_scene_annotations, startDate, endDate);
+        console.log('lineData3 after filter, before draw')
+        console.log(lineData3)
+        drawScene3(true);
+    }
+}
 
-    // Scale the x-axis (timestamps)
-    const xAxis = d3.axisBottom(xScale);
-    const yAxis = d3.axisLeft(yScale);
-
-    // Initialize each axis
-    const xAxisGroup = chart.append('g')
-        .attr("class", "x-axis")
-        .attr('transform', `translate(0, ${chartHeight})`)
-    // .call(xAxis);
-    const yAxisGroup = chart.append('g').attr("class", "y-axis")
-    // .call(yAxis);
-
-
-
-    let allData = [];
-    var update = (newdata) => {
-        // Handle the scaling domains
-
-        allData = allData.concat(newdata);
-
-        xScale.domain(d3.extent(data, d => parseDate(d['DATE'])));
-        yScale.domain([0, d3.max(data, (d) => +d['PERCENTOFGDP'])]);
-        var line = d3.line()
-            .x(function (d) { return xScale(parseDate(d['DATE'])) })
-            .y(function (d) { return yScale(parseFloat(d['PERCENTOFGDP'])) });
-
-        let path = chart.selectAll('path.line')
-            .data([allData]);
-        // Get existing path length
-
-        let oldPathLength = path.node() ? path.node().getTotalLength() : 0;
-
-        // Handle new data
-        path.enter().append('path')
-            .attr('class', 'line')
-            .merge(path)
-            .attr('d', line)
-            .style('stroke', 'steelblue')
-            .style('stroke-width', 2)
-            .style('fill', 'none')
-            .attr("stroke-dasharray", function () {     // total line length
-                var totalLength = this.getTotalLength();
-                return totalLength + " " + totalLength;
-            })
-            .attr("stroke-dashoffset", oldPathLength)  // starting from the last offset
-            .transition()
-            .duration(1000)
-            .ease(d3.easeLinear)
-            .attr("stroke-dashoffset", 0);             // animate to the end of the line
-
-        // oldPathLength = path.node() ? path.node().getTotalLength() : 0;
-
-        path.exit().remove();
-        // const path = chart.selectAll('path.line').data([allData]);
-
-        // path.enter().append('path')
-        //     .attr('class', 'line')
-        //     .merge(path)
-        //     .attr('d', line)
-        //     .style('stroke', 'orange')
-        //     .style('stroke-width', 2)
-        //     .style('fill', 'none')
-        //     .attr("stroke-dasharray", function () {
-        //         return this.getTotalLength();
-        //     })
-        //     .attr("stroke-dashoffset", function () {
-        //         return this.getTotalLength();
-        //     })
-        //     .transition()
-        //     .duration(1000)
-        //     .attr("stroke-dashoffset", 0);
-        // path.exit().remove();
-
-        xAxisGroup.call(xAxis);
-        yAxisGroup.call(yAxis);
-
-        // Handle the chart label styling
-        xAxisGroup
-            .selectAll('text')
-            .attr('text-anchor', 'end')
-            .attr('transform', 'rotate(-40)') // tilt the timestamps by 40 degrees
-            // .attr('fill', 'orange') // Timestamp(x-axis) color
-            .attr('font-size', '0.5rem'); //  Timestamp(x-axis) font size
-
-        yAxisGroup
-            .selectAll('text')
-            .attr('text-anchor', 'end')
-            // .attr('fill', 'orange') //  Temperature(y-axis) color
-            .attr('font-size', '0.75rem'); // Temperature(y-axis) font size
-
-        addLineDots(chart, svgWidth, svgHeight, 'DATE', xScale, allData, yScale, 'PERCENTOFGDP');
-
-    };
-    // update(lineData1);
-    // update(lineData2);
-    // update(lineData3);
-
-    // Event listener for button1
-    d3.select("#button1").on("click", function () {
-        allData = [];
-        update(lineData1);
-        console.log(allData.length);
+function filterData(data) {
+    const startDate = new Date(startDateInput.value);
+    const endDate = new Date(endDateInput.value);
+    console.log("Current Start:" + startDate)
+    console.log("Current End:" + endDate)
+    const filteredData = data.filter(obj => {
+        const date = new Date(obj.DATE);
+        return date >= startDate && date <= endDate;
     });
-    // Event listener for button2
-    d3.select("#button2").on("click", function () {
-        if (allData.length < 80) {
-            allData = lineData1;
-        }
-        else if (allData.length == 156) {
-            allData = lineData1
-        }
-        else if (allData.length == 229) {
-            allData = lineData1;
-        }
-        update(lineData2);
-        console.log(allData.length);
-    });
-    // Event listener for button3
-    d3.select("#button3").on("click", function () {
-        if (allData.length < 156) {
-            allData = lineData1.concat(lineData2);
-        }
-        else if (allData.length == 229) {
-            allData = lineData1.concat(lineData2);
-        }
-        update(lineData3);
-        console.log(allData.length);
-    });
+    console.log('filtered data')
+    console.log(filteredData)
+    return filteredData;
+};
+
+function getMinDate(data) {
+    const dates = data.map(obj => new Date(obj.DATE));
+    const minDate = new Date(Math.min(...dates));
+    console.log(minDate);
+    return minDate.toISOString().split('T')[0];
+}
+
+function getMaxDate(data) {
+    const dates = data.map(obj => new Date(obj.DATE));
+    const maxDate = new Date(Math.max(...dates));
+    console.log(maxDate);
+
+    return maxDate.toISOString().split('T')[0];
+}
+
+function updateMinMaxDate(data) {
+    console.log('update minmax')
+    console.log(data);
+    const minDate = getMinDate(data);
+    const maxDate = getMaxDate(data);
+    // startDateInput.min = minDate;
+    // startDateInput.max = maxDate;
+    // endDateInput.min = minDate;
+    // endDateInput.max = maxDate;
+    startDateInput.value = minDate;
+    endDateInput.value = maxDate;
 }

@@ -1,0 +1,115 @@
+ /* Next & previous buttons */
+ .prev,
+ .next {
+     cursor: pointer;
+     position: absolute;
+     top: 50%;
+     color: white;
+     font-weight: bold;
+     font-size: 18px;
+     transition: 0.6s ease;
+ }
+
+ .next {
+     right: 0;
+ }
+
+ /* Caption text */
+ .text {
+     color: #ff0000;
+     font-size: 15px;
+     padding: 8px 12px;
+     position: absolute;
+     bottom: 8px;
+     width: 100%;
+     text-align: center;
+ }
+
+ /* On smaller screens, decrease text size */
+ @media only screen and (max-width: 300px) {
+
+     .prev,
+     .next,
+     .text {
+         font-size: 11px;
+     }
+ }
+
+ rect {
+     fill: none;
+     pointer-events: all;
+     fill-opacity: 0;
+     stroke-opacity: 0;
+     z-index: 1;
+ }
+
+ .tooltip {
+     position: absolute;
+     padding: 10px;
+     font: 12px sans-serif;
+     background: lightsteelblue;
+     border: 1px solid white;
+     border-radius: 10px;
+     display: none;
+     opacity: 1;
+ }
+
+ .chart-container {
+     display: flex;
+     justify-content: center;
+     align-items: center;
+
+     /* Adjust the height as needed */
+ }
+
+ .container h2 {
+     text-align: center;
+ }
+
+ .slide-nav {
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     padding: 10px;
+
+ }
+
+ .page-button {
+     margin: 0 5px;
+     /* Add margin between buttons */
+ }
+
+ .chart-controls {
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     text-align: center;
+ }
+
+ .chart-controls label,
+ .chart-controls input {
+     margin: 0 5px;
+ }
+
+ ul {
+     list-style: none;
+     text-align: center;
+     padding: 0;
+ }
+
+ li {
+     display: inline-block;
+     margin: 0 10px;
+ }
+
+ .container h1 {
+     text-align: center;
+ }
+
+
+
+ .container span {
+     display: block;
+     margin-top: 10px;
+     text-align: center;
+ }

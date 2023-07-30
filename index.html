@@ -2,37 +2,50 @@
 
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="css/responsive.css">
-    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="css/responsive.css">
+        <link rel="stylesheet" type="text/css" href="css/styles.css">
 
-    <title>CS416 Narrative Visualization</title>
-</head>
+        <title>CS416 Narrative Visualization</title>
+        </head>
 
-<body onload="init()">
-
-<div class="container">
-        <h2>US National Debt (% of GDP)</h2>
+    <body onload="init()">
+        <div class="container">
+            <h1>The Impacts of Financial Crises on the US Public Debt (1966-2023)</h1>
+            <h2>US National Debt (% of GDP)</h2>
+            <span>Select a start and end date to filter the chart:</span>
+            <div id="control" class="chart-controls">
+                <label for="start">Start Date:</label>
+                <input type="date" id="start" name="start" min="1960-01-01" max="2023-01-01">
+                <label for="end">End Date:</label>
+                <input type="date" id="end" name="end" min="1960-01-01" max="2023-01-01">
+            </div>
+            <div id="chart" class="chart-container"></div>
+            <span>Hover over the chart to see tooltips</span>
+            
+            </div>
         
-        <div id="chart" class="chart-container"></div>
-    
     <div id="footer" class="slide-nav">
         <button class="page-button" onclick="previousPage()">Previous</button>
-        <button class="page-button" id=button1>1</button>
-        <button class="page-button" id=button2>2</button>
-        <button class="page-button" id=button3>3</button>
+        <button class="page-button" id=button1>Scene1</button>
+        <button class="page-button" id=button2>Scene2</button>
+        <button class="page-button" id=button3>Scene3</button>
         <button class="page-button" onclick="nextPage()">Next</button>
     </div>
-    </div>
+    <div id="narrative-detail" class="container"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.5.1/d3-annotation.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
     <script type="text/javascript" src="scripts/charts.js"></script>
     <script type="text/javascript" src="scripts/index.js"></script>
+    <script type="text/javascript" src="scripts/scene1.js"></script>
+    <script type="text/javascript" src="scripts/scene2.js"></script>
+    <script type="text/javascript" src="scripts/scene3.js"></script>
 
 
-</body>
+    </body>
 
 </html>

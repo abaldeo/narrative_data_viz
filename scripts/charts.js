@@ -172,7 +172,9 @@ function createScatterPlot(csvData, xValue, yValue, options) {
 
 */
 
-var parseDate = d3.timeParse("%Y-%m-%d");
+const parseDate = d3.timeParse("%Y-%m-%d");
+const timeFormat = d3.timeFormat("%Y-%m-%d")
+
 var x;
 var y;
 
@@ -297,8 +299,11 @@ function addLineDots(svg, width, height, xValue, xScale, csvData, yScale, yValue
 
         tooltip
             .style("display", "block")
-            .style("left", `${xPos + 100}px`)
-            .style("top", `${yPos + 50}px`)
+            // .style("top", (event.pageY) + "px")
+            // .style("left", (event.pageX) + "px")
+            .style("left", `${xPos + 400}px`)
+            .style("top", `${yPos + 100}px`)
+            .style("opacity", 0.7)
             .html(`<strong>Date:</strong> ${d[xValue]}<br><strong>Value:</strong> ${d[yValue]}`)
         /*
         
@@ -320,12 +325,18 @@ function addLineDots(svg, width, height, xValue, xScale, csvData, yScale, yValue
 }
 
 function addAnnotations(svg, xScale, yScale, annotationsArray) {
+    const annotype = d3.annotationCalloutCircle//d3.annotationCallout
+
     var makeAnnotations = d3.annotation()
-        .type(d3.annotationLabel)
+        .type(annotype)
         .accessors({
-            x: d => xScale(d.x),
+            x: d => xScale(parseDate(d.x)),
             y: d => yScale(d.y)
         })
+        // .accessorsInverse({
+        //     DATE: d => timeFormat(xScale.invert(d.x)),
+        //     PERCENTOFGDP: d => yScale.invert(d.y)
+        // })
         .annotations(annotationsArray);
     var annotationGroup = svg.select(".annotation-group");
     if (annotationGroup.empty()) {
