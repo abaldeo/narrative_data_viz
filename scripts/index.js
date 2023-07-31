@@ -111,7 +111,7 @@ let data;
 let lineData1 = [];
 let lineData2 = [];
 let lineData3 = [];
-let svg = [];
+let svg; 
 
 const intervals = [
     { start: '1966-01-01', end: '1985-12-31' },
@@ -122,6 +122,9 @@ const intervals = [
 
 let partitions = [];
 let annotations = [];
+let first_scene_annotations = [];
+let second_scene_annotations = [];
+let third_scene_annotations = [];
 
 async function init() {
     data = await loadData("data/nationaldebt.csv")
